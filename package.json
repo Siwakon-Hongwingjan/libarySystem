@@ -1,0 +1,17 @@
+{
+  "name": "library-system",
+  "version": "1.0.0",
+  "description": "INT-141 Library System — Teaching Exercise",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+  },
+  "jest": {
+    "transform": {}
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
