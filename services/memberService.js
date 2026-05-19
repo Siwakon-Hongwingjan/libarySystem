@@ -27,7 +27,7 @@ export function getMember(library, memberId) {
 export function safeAddMember(library, member) {
   try {
     addMember(library, member);
-    return { success: true, data: library.members, message: "Member added successfully" };
+    return { success: true, data: [...library.members], message: "Member added successfully" };
   } catch (error) {
     return { success: false, data: null, message: error.message };
   } finally {

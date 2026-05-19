@@ -38,7 +38,7 @@ export function listAllBooks(library) {
 export function safeAddBook(library, book) {
   try {
     addBook(library, book);
-    return { success: true, data: library.books, message: "Book added successfully" };
+    return { success: true, data: [...library.books], message: "Book added successfully" };
   } catch (error) {
     return { success: false, data: null, message: error.message };
   } finally {
@@ -49,7 +49,7 @@ export function safeAddBook(library, book) {
 export function safeRemoveBook(library, bookId) {
   try {
     removeBook(library, bookId);
-    return { success: true, data: library.books, message: "Book removed successfully" };
+    return { success: true, data: [...library.books], message: "Book removed successfully" };
   } catch (error) {
     return { success: false, data: null, message: error.message };
   } finally {
