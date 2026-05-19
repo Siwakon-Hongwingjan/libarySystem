@@ -1,5 +1,5 @@
 import { Member } from "../models/Member.js";
-import { addMember, getMember } from "../services/memberService.js";
+import { addMember, getMember, safeAddMember } from "../services/memberService.js";
 
 describe("addMember", () => {
   let library;
@@ -56,5 +56,20 @@ describe("addMember — validation (week3)", () => {
   test("throws when email is invalid", () => {
     const m = new Member({ id: "LIB-0001", name: "Alice", phone: "0812345678", email: "notanemail" });
     expect(() => addMember(library, m)).toThrow("Invalid email format");
+  });
+});
+
+describe("safeAddMember (week4)", () => {
+  let library;
+  beforeEach(() => { library = { members: [] }; });
+
+  test("returns success:true on valid member", () => {
+    const m = new Member({ id: "LIB-0001", name: "Alice", phone: "0812345678", email: "alice@test.com" });
+    expect(safeAddMember(library, m).success).toBe(true);
+  });
+
+  test("returns success:false on invalid member ID", () => {
+    const m = new Member({ id: "INVALID", name: "Alice", phone: "0812345678", email: "alice@test.com" });
+    expect(safeAddMember(library, m).success).toBe(false);
   });
 });

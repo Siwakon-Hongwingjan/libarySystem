@@ -3,7 +3,7 @@ import { Book } from "../models/Book.js";
 import { Member } from "../models/Member.js";
 import { addBook } from "../services/bookService.js";
 import { addMember } from "../services/memberService.js";
-import { borrowBook, returnBook } from "../services/borrowService.js";
+import { borrowBook, returnBook, safeBorrowBook, safeReturnBook } from "../services/borrowService.js";
 
 // ─── dateUtils ────────────────────────────────────────────────────────────────
 
@@ -119,5 +119,44 @@ describe("returnBook", () => {
   test("throws when book already returned", () => {
     returnBook(library, record.recordId);
     expect(() => returnBook(library, record.recordId)).toThrow("Book already returned");
+  });
+});
+
+describe("safeBorrowBook (week4)", () => {
+  let library;
+  beforeEach(() => {
+    library = { books: [], members: [], records: [] };
+    addBook(library, new Book({ id: "B001", title: "JS", author: "Alice", isbn: "978-616-05-0001-1", category: "Technology" }));
+    addMember(library, new Member({ id: "LIB-0001", name: "Alice", phone: "0812345678", email: "alice@test.com" }));
+  });
+
+  test("returns success:true on valid borrow", () => {
+    const result = safeBorrowBook(library, "LIB-0001", "B001");
+    expect(result.success).toBe(true);
+    expect(result.data).not.toBeNull();
+  });
+
+  test("returns success:false when book not available", () => {
+    safeBorrowBook(library, "LIB-0001", "B001");
+    expect(safeBorrowBook(library, "LIB-0001", "B001").success).toBe(false);
+  });
+});
+
+describe("safeReturnBook (week4)", () => {
+  let library;
+  let record;
+  beforeEach(() => {
+    library = { books: [], members: [], records: [] };
+    addBook(library, new Book({ id: "B001", title: "JS", author: "Alice", isbn: "978-616-05-0001-1", category: "Technology" }));
+    addMember(library, new Member({ id: "LIB-0001", name: "Alice", phone: "0812345678", email: "alice@test.com" }));
+    record = borrowBook(library, "LIB-0001", "B001");
+  });
+
+  test("returns success:true on valid return", () => {
+    expect(safeReturnBook(library, record.recordId).success).toBe(true);
+  });
+
+  test("returns success:false when record not found", () => {
+    expect(safeReturnBook(library, "RNONE").success).toBe(false);
   });
 });

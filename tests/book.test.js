@@ -1,5 +1,5 @@
 import { Book } from "../models/Book.js";
-import { addBook, removeBook, searchBook, listAllBooks } from "../services/bookService.js";
+import { addBook, removeBook, searchBook, listAllBooks, safeAddBook, safeRemoveBook } from "../services/bookService.js";
 
 describe("addBook", () => {
   let library;
@@ -88,5 +88,45 @@ describe("addBook — validation (week3)", () => {
   test("throws when title starts with whitespace", () => {
     const book = new Book({ id: "B001", title: " Bad Title", author: "Alice", isbn: "978-616-05-0001-1", category: "Technology" });
     expect(() => addBook(library, book)).toThrow("Title must be");
+  });
+});
+
+describe("safeAddBook (week4)", () => {
+  let library;
+  beforeEach(() => { library = { books: [] }; });
+
+  test("returns success:true when book is valid", () => {
+    const book = new Book({ id: "B001", title: "JS", author: "Alice", isbn: "978-616-05-0001-1", category: "Technology" });
+    const result = safeAddBook(library, book);
+    expect(result.success).toBe(true);
+    expect(result.message).toBe("Book added successfully");
+  });
+
+  test("returns success:false on invalid book instance", () => {
+    const result = safeAddBook(library, { id: "B001" });
+    expect(result.success).toBe(false);
+    expect(result.data).toBeNull();
+  });
+
+  test("returns success:false on duplicate id", () => {
+    const book = new Book({ id: "B001", title: "JS", author: "Alice", isbn: "978-616-05-0001-1", category: "Technology" });
+    safeAddBook(library, book);
+    expect(safeAddBook(library, book).success).toBe(false);
+  });
+});
+
+describe("safeRemoveBook (week4)", () => {
+  let library;
+  beforeEach(() => {
+    library = { books: [] };
+    addBook(library, new Book({ id: "B001", title: "JS", author: "Alice", isbn: "978-616-05-0001-1", category: "Technology" }));
+  });
+
+  test("returns success:true when book exists", () => {
+    expect(safeRemoveBook(library, "B001").success).toBe(true);
+  });
+
+  test("returns success:false when book not found", () => {
+    expect(safeRemoveBook(library, "BNONE").success).toBe(false);
   });
 });
