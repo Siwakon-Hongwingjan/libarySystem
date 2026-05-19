@@ -75,3 +75,18 @@ describe("listAllBooks", () => {
     expect(listAllBooks(library)).toHaveLength(0);
   });
 });
+
+describe("addBook — validation (week3)", () => {
+  let library;
+  beforeEach(() => { library = { books: [] }; });
+
+  test("throws when ISBN format is invalid", () => {
+    const book = new Book({ id: "B001", title: "Valid Title", author: "Alice", isbn: "INVALID-ISBN", category: "Technology" });
+    expect(() => addBook(library, book)).toThrow("ISBN must be in format");
+  });
+
+  test("throws when title starts with whitespace", () => {
+    const book = new Book({ id: "B001", title: " Bad Title", author: "Alice", isbn: "978-616-05-0001-1", category: "Technology" });
+    expect(() => addBook(library, book)).toThrow("Title must be");
+  });
+});

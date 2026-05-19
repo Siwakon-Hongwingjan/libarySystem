@@ -38,3 +38,23 @@ describe("getMember", () => {
     expect(() => getMember(library, "LIB-9999")).toThrow("Member not found");
   });
 });
+
+describe("addMember — validation (week3)", () => {
+  let library;
+  beforeEach(() => { library = { members: [] }; });
+
+  test("throws when member ID format is invalid", () => {
+    const m = new Member({ id: "INVALID", name: "Alice", phone: "0812345678", email: "alice@test.com" });
+    expect(() => addMember(library, m)).toThrow("Member ID must be in format");
+  });
+
+  test("throws when phone format is invalid", () => {
+    const m = new Member({ id: "LIB-0001", name: "Alice", phone: "12345", email: "alice@test.com" });
+    expect(() => addMember(library, m)).toThrow("Phone must start with 06-09");
+  });
+
+  test("throws when email is invalid", () => {
+    const m = new Member({ id: "LIB-0001", name: "Alice", phone: "0812345678", email: "notanemail" });
+    expect(() => addMember(library, m)).toThrow("Invalid email format");
+  });
+});
