@@ -1,8 +1,15 @@
 import { calculateDueDate, formatDate, isOverdue, daysDiff } from "../utils/dateUtils.js";
+import { Book } from "../models/Book.js";
+import { Member } from "../models/Member.js";
+import { addBook } from "../services/bookService.js";
+import { addMember } from "../services/memberService.js";
+import { borrowBook, returnBook } from "../services/borrowService.js";
+
+// ─── dateUtils ────────────────────────────────────────────────────────────────
 
 describe("calculateDueDate", () => {
   test("adds the correct number of days", () => {
-    const borrow = new Date(2026, 0, 1); // Jan 1, 2026
+    const borrow = new Date(2026, 0, 1);
     const due = calculateDueDate(borrow, 14);
     expect(formatDate(due)).toBe("2026-01-15");
   });
@@ -45,5 +52,72 @@ describe("daysDiff", () => {
 
   test("returns 0 for same date", () => {
     expect(daysDiff(new Date(2026, 0, 1), new Date(2026, 0, 1))).toBe(0);
+  });
+});
+
+// ─── borrowService ────────────────────────────────────────────────────────────
+
+describe("borrowBook", () => {
+  let library;
+  beforeEach(() => {
+    library = { books: [], members: [], records: [] };
+    addBook(library, new Book({ id: "B001", title: "JS", author: "Alice", isbn: "978-616-05-0001-1", category: "Technology" }));
+    addMember(library, new Member({ id: "LIB-0001", name: "Alice", phone: "0812345678", email: "alice@test.com" }));
+  });
+
+  test("creates a BorrowRecord", () => {
+    const record = borrowBook(library, "LIB-0001", "B001");
+    expect(record.book.id).toBe("B001");
+    expect(record.member.id).toBe("LIB-0001");
+    expect(record.returnDate).toBeNull();
+  });
+
+  test("sets book isAvailable to false", () => {
+    borrowBook(library, "LIB-0001", "B001");
+    expect(library.books[0].isAvailable).toBe(false);
+  });
+
+  test("sets dueDate to borrowDate + 14 days", () => {
+    const record = borrowBook(library, "LIB-0001", "B001");
+    expect(daysDiff(record.borrowDate, record.dueDate)).toBe(14);
+  });
+
+  test("throws when book is not available", () => {
+    borrowBook(library, "LIB-0001", "B001");
+    expect(() => borrowBook(library, "LIB-0001", "B001")).toThrow("Book not available");
+  });
+
+  test("throws when book not found", () => {
+    expect(() => borrowBook(library, "LIB-0001", "BNONE")).toThrow("Book not found");
+  });
+});
+
+describe("returnBook", () => {
+  let library;
+  let record;
+  beforeEach(() => {
+    library = { books: [], members: [], records: [] };
+    addBook(library, new Book({ id: "B001", title: "JS", author: "Alice", isbn: "978-616-05-0001-1", category: "Technology" }));
+    addMember(library, new Member({ id: "LIB-0001", name: "Alice", phone: "0812345678", email: "alice@test.com" }));
+    record = borrowBook(library, "LIB-0001", "B001");
+  });
+
+  test("sets returnDate on the record", () => {
+    returnBook(library, record.recordId);
+    expect(record.returnDate).not.toBeNull();
+  });
+
+  test("sets book isAvailable back to true", () => {
+    returnBook(library, record.recordId);
+    expect(library.books[0].isAvailable).toBe(true);
+  });
+
+  test("throws when record not found", () => {
+    expect(() => returnBook(library, "RNONE")).toThrow("Record not found");
+  });
+
+  test("throws when book already returned", () => {
+    returnBook(library, record.recordId);
+    expect(() => returnBook(library, record.recordId)).toThrow("Book already returned");
   });
 });
