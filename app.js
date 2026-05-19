@@ -1,21 +1,25 @@
 import { Book } from "./models/Book.js";
-import { addBook, removeBook, searchBook, listAllBooks } from "./services/bookService.js";
+import { Member } from "./models/Member.js";
+import { addBook, listAllBooks } from "./services/bookService.js";
+import { addMember } from "./services/memberService.js";
+import { borrowBook, returnBook } from "./services/borrowService.js";
+import { formatDate, isOverdue } from "./utils/dateUtils.js";
 
-const library = { books: [] };
+const library = { books: [], members: [], records: [] };
 
 const js = new Book({ id: "B001", title: "JavaScript Basics", author: "Alice Smith", isbn: "978-616-05-0001-1", category: "Technology" });
 const py = new Book({ id: "B002", title: "Python for Beginners", author: "Bob Jones", isbn: "978-616-05-0002-8", category: "Technology" });
-const cc = new Book({ id: "B003", title: "Clean Code", author: "Robert Martin", isbn: "978-616-05-0003-5", category: "Technology" });
-
 addBook(library, js);
 addBook(library, py);
-addBook(library, cc);
 
-console.log("=== All Books ===");
-listAllBooks(library).forEach((b) => console.log(`${b.id}: ${b.title} by ${b.author}`));
+const alice = new Member({ id: "LIB-0001", name: "Alice Smith", phone: "0812345678", email: "alice@example.com" });
+addMember(library, alice);
 
-console.log("\n=== Search 'python' ===");
-searchBook(library, "python").forEach((b) => console.log(`Found: ${b.title}`));
+const record = borrowBook(library, "LIB-0001", "B001");
+console.log(`Borrowed: ${record.book.title}`);
+console.log(`Due date: ${formatDate(record.dueDate)}`);
+console.log(`Overdue? ${isOverdue(record.dueDate)}`);
 
-removeBook(library, "B003");
-console.log(`\n=== After removing B003: ${listAllBooks(library).length} books ===`);
+returnBook(library, record.recordId);
+console.log(`Returned: ${record.book.title} on ${formatDate(record.returnDate)}`);
+console.log(`B001 available again? ${library.books[0].isAvailable}`);
